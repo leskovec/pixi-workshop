@@ -28,8 +28,8 @@ Pixi also runs natively on Windows (`winget install prefix-dev.pixi`, or the Pow
 ## 3. Get the material
 
 ```bash
-git clone <repository URL>
-cd pixi-workshop-examples
+git clone https://github.com/leskovec/pixi-workshop.git
+cd pixi-workshop
 ```
 
 No git? `pixi global install git` installs it.

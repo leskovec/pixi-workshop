@@ -6,7 +6,7 @@ Mostly an instructor demo on the cluster. Steps 1 and 2 also work on a laptop.
 
 ```bash
 mkdir /tmp/lockdemo && cd /tmp/lockdemo
-bash /path/to/pixi-workshop-examples/hpc/locked-vs-frozen.sh
+bash /path/to/pixi-workshop/hpc/locked-vs-frozen.sh
 ```
 
 | Option | Checks lock file against manifest | Solves / rewrites lock | Installs / updates environment | Use for |
@@ -41,7 +41,7 @@ pixi config unset --local detached-environments
 
 ```bash
 source pixi-env.sh                         # see hpc/pixi-env.sh
-git clone <repo> && cd pixi-workshop-examples/grayscott
+git clone https://github.com/leskovec/pixi-workshop.git && cd pixi-workshop/grayscott
 cp ../solutions/block-7-pixi-build/grayscott/pixi.toml .
 pixi install --locked -e prod              # on the login node: solve + download once
 sbatch ../hpc/grayscott-bundled.sbatch     # job uses --as-is

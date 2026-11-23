@@ -367,8 +367,8 @@ Native installer with a pinned version: $Env:PIXI_VERSION = "v0.84.2"; powershel
 # Setup check
 
 ```bash
-git clone <repository URL>
-cd pixi-workshop-examples/setup
+git clone https://github.com/leskovec/pixi-workshop.git
+cd pixi-workshop/setup
 pixi run check
 ```
 
@@ -1013,7 +1013,7 @@ class: text-center
 
 <div class="mt-8 text-lg">
 
-Material: `<repository URL>`
+Material: [github.com/leskovec/pixi-workshop](https://github.com/leskovec/pixi-workshop)
 
 Questions later: [](mailto:)
 
