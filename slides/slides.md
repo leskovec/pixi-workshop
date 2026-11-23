@@ -1015,8 +1015,6 @@ class: text-center
 
 Material: [github.com/leskovec/pixi-workshop](https://github.com/leskovec/pixi-workshop)
 
-Questions later: [](mailto:)
-
 </div>
 
 <div class="mt-8 text-sm opacity-80">
