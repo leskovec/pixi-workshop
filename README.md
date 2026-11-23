@@ -22,20 +22,3 @@ setup/                setup check, run before the workshop
 slides/               the lecture slides (Slidev), pixi run dev to view
 ```
 
-## Programme
-
-| Time | Block | Instructions | Solution |
-|---|---|---|
-|0. Welcome and setup check | [SETUP.md](SETUP.md) | |
-|1. Lecture: environment management on HPC | | |
-|2. First workspace | [exercises/02-first-workspace.md](exercises/02-first-workspace.md) | |
-|3. Lecture: tasks, features, environments | | |
-|4. The example becomes a project | [exercises/04-project.md](exercises/04-project.md) | `solutions/block-4-project/` |
-|Break | | |
-|5. Pixi on HPC, `--locked` vs `--frozen` | [exercises/05-hpc.md](exercises/05-hpc.md) | `hpc/` |
-|6. MPI: bundled vs system | [exercises/06-mpi.md](exercises/06-mpi.md) | `solutions/block-6-mpi/` |
-|7. Packaging the solver with pixi-build | [exercises/07-pixi-build.md](exercises/07-pixi-build.md) | `solutions/block-7-pixi-build/` |
-|8. pixi-pack: can it replace a container? | [exercises/08-pixi-pack.md](exercises/08-pixi-pack.md) | |
-|9. For fun, wrap-up | [exercises/09-fun.md](exercises/09-fun.md) | |
-
-
