@@ -1,6 +1,5 @@
 # Setup before the workshop
 
-Please do this before 25 November. It takes about 10 minutes, most of it downloading.
 
 ## 1. Operating system
 
