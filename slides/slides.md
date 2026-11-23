@@ -133,16 +133,20 @@ $$
 \end{aligned}
 $$
 
-<div class="mt-8">
+<div class="mt-4">
 
 | | Term | Meaning |
 |---|---|---|
 | <span style="color:#2b8cbe">■</span> | $D\,\nabla^2$ | diffusion: each chemical spreads to its neighbours; $D_u = 0.16$, $D_v = 0.08$ |
 | <span style="color:#b5367a">■</span> | $u v^2$ | the reaction $U + 2V \to 3V$: one U and two V meet, U turns into V |
-| <span style="color:#e66101">■</span> | $F(1-u)$ | feed: U is topped up towards concentration 1 |
-| <span style="color:#e66101">■</span> | $(F+k)\,v$ | removal: V is washed out at rate $F$ and decays at rate $k$ |
+| <span style="color:#e66101">■</span> | <span class="whitespace-nowrap">$F(1-u)$</span> | feed: $F$ is the rate at which we add U to the domain |
+| <span style="color:#e66101">■</span> | <span class="whitespace-nowrap">$(F+k)\,v$</span> | removal: V decays into the inert P at rate $k$, and the feed flow washes it out at rate $F$ |
 
 </div>
+
+<!--
+The (1 - u) in the feed: the reservoir has concentration 1, so the feed slows down as u approaches 1.
+-->
 
 ---
 
