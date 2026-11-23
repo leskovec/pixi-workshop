@@ -1,0 +1,9 @@
+/* Larger code for screen sharing, and no ligatures so >= stays >= */
+:root {
+  --slidev-code-font-size: 15px;
+  --slidev-code-line-height: 22px;
+}
+.slidev-layout pre,
+.slidev-layout code {
+  font-variant-ligatures: none;
+}

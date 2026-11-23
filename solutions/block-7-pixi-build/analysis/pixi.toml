@@ -1,0 +1,18 @@
+# Solution for block 7, step 3: a separate workspace that uses the solver
+# package. Copy into analysis/ (cp solutions/block-7-pixi-build/analysis/pixi.toml analysis/).
+
+[workspace]
+name = "grayscott-analysis"
+channels = ["conda-forge"]
+platforms = ["linux-64", "linux-aarch64", "osx-arm64", "osx-64"]
+preview = ["pixi-build"]
+
+[dependencies]
+# Built from source by pixi-build; could also come from a channel once published.
+grayscott = { path = "../grayscott" }
+python = "3.13.*"
+numpy = ">=2"
+matplotlib-base = "*"
+
+[tasks]
+scan = { cmd = "python scan.py --ranks {{ ranks }}", args = [{ arg = "ranks", default = "2" }], description = "Scan (F, k) and write data/gallery.png" }

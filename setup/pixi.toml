@@ -1,0 +1,24 @@
+# Setup check for participants. Run before the workshop:
+#
+#   cd setup && pixi run check
+#
+# This downloads the packages used in the workshop into pixi's cache, so the
+# exercises do not wait for downloads on the day.
+
+[workspace]
+name = "setup-check"
+channels = ["conda-forge"]
+platforms = ["linux-64", "linux-aarch64", "osx-arm64", "osx-64"]
+
+[dependencies]
+cxx-compiler = "*"
+cmake = ">=3.20"
+ninja = "*"
+openmpi = ">=5.0,<6"
+python = "3.13.*"
+mpi4py = ">=4"
+numpy = ">=2"
+matplotlib-base = "*"
+
+[tasks]
+check = { cmd = "mpirun --oversubscribe -n 2 python -c 'from mpi4py import MPI; import numpy, matplotlib; c = MPI.COMM_WORLD; print(f\"rank {c.rank} of {c.size}: setup OK\")'", description = "Verify the setup" }

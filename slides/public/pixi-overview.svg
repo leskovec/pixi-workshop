@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 370" width="900" height="370" font-size="15" font-family="Inter, Helvetica, Arial, sans-serif" fill="#333">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#555"/>
+    </marker>
+  </defs>
+
+  <!-- project folder frame -->
+  <rect x="385" y="20" width="362" height="340" rx="10" fill="#f6f6f6" stroke="#999" stroke-dasharray="6 4"/>
+  <text x="400" y="42" font-size="13" fill="#777">your project folder</text>
+
+  <!-- you -->
+  <rect x="10" y="60" width="90" height="40" rx="20" fill="#fff" stroke="#555"/>
+  <text x="55" y="85" text-anchor="middle">you</text>
+
+  <!-- channels -->
+  <rect x="10" y="190" width="140" height="160" rx="10" fill="#fff" stroke="#999" stroke-dasharray="6 4"/>
+  <text x="80" y="212" text-anchor="middle" font-size="13" fill="#777">channels (internet)</text>
+  <rect x="25" y="225" width="110" height="32" rx="6" fill="#eef" stroke="#88a"/>
+  <text x="80" y="246" text-anchor="middle">conda-forge</text>
+  <rect x="25" y="264" width="110" height="32" rx="6" fill="#eef" stroke="#88a"/>
+  <text x="80" y="285" text-anchor="middle">bioconda</text>
+  <rect x="25" y="303" width="110" height="32" rx="6" fill="#eef" stroke="#88a"/>
+  <text x="80" y="324" text-anchor="middle">PyPI</text>
+
+  <!-- cache -->
+  <rect x="215" y="250" width="140" height="56" rx="8" fill="#fff" stroke="#555"/>
+  <text x="285" y="274" text-anchor="middle">package cache</text>
+  <text x="285" y="293" text-anchor="middle" font-size="12" fill="#777">shared by all projects</text>
+
+  <!-- pixi.toml, pixi.lock, environment -->
+  <rect x="405" y="58" width="135" height="46" rx="8" fill="#2b8cbe1a" stroke="#2b8cbe" stroke-width="2.5"/>
+  <text x="472" y="80" text-anchor="middle" font-family="JetBrains Mono, Menlo, Consolas, monospace" font-weight="bold" fill="#2b8cbe">pixi.toml</text>
+  <text x="472" y="97" text-anchor="middle" font-size="12">what you want</text>
+
+  <rect x="600" y="58" width="135" height="46" rx="8" fill="#b5367a1a" stroke="#b5367a" stroke-width="2.5"/>
+  <text x="667" y="80" text-anchor="middle" font-family="JetBrains Mono, Menlo, Consolas, monospace" font-weight="bold" fill="#b5367a">pixi.lock</text>
+  <text x="667" y="97" text-anchor="middle" font-size="12">what you get</text>
+
+  <rect x="550" y="250" width="185" height="56" rx="8" fill="#e661011a" stroke="#e66101" stroke-width="2.5"/>
+  <text x="642" y="274" text-anchor="middle" font-family="JetBrains Mono, Menlo, Consolas, monospace" font-weight="bold" fill="#e66101">.pixi/envs/default</text>
+  <text x="642" y="293" text-anchor="middle" font-size="12">the environment</text>
+
+  <!-- program and elsewhere -->
+  <rect x="800" y="250" width="95" height="56" rx="28" fill="#fff" stroke="#555"/>
+  <text x="847" y="274" text-anchor="middle">your</text>
+  <text x="847" y="292" text-anchor="middle">program</text>
+
+  <rect x="800" y="40" width="95" height="82" rx="8" fill="#fff" stroke="#555"/>
+  <text x="847" y="65" text-anchor="middle" font-size="14">colleague</text>
+  <text x="847" y="86" text-anchor="middle" font-size="14">cluster</text>
+  <text x="847" y="107" text-anchor="middle" font-size="14">next year</text>
+
+  <!-- arrows: what you do -->
+  <line x1="100" y1="80" x2="403" y2="80" stroke="#555" stroke-width="1.8" marker-end="url(#ah)"/>
+  <text x="250" y="72" text-anchor="middle" font-family="JetBrains Mono, Menlo, Consolas, monospace" font-size="13">pixi add</text>
+
+  <line x1="540" y1="80" x2="598" y2="80" stroke="#b5367a" stroke-width="2.2" marker-end="url(#ah)"/>
+  <text x="569" y="70" text-anchor="middle" font-weight="bold" fill="#b5367a">① solve</text>
+
+  <path d="M80,190 L80,150 L569,150 L569,84" fill="none" stroke="#888" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+  <text x="250" y="142" text-anchor="middle" font-size="13" fill="#666">which packages exist</text>
+
+  <line x1="150" y1="278" x2="213" y2="278" stroke="#555" stroke-width="2.2" marker-end="url(#ah)"/>
+    <text x="182" y="248" text-anchor="middle" font-size="13" font-weight="bold">②</text>
+  <text x="182" y="268" text-anchor="middle" font-size="13">download</text>
+
+  <line x1="355" y1="278" x2="548" y2="278" stroke="#e66101" stroke-width="2.2" marker-end="url(#ah)"/>
+  <text x="460" y="268" text-anchor="middle" font-weight="bold" fill="#e66101">③ link</text>
+
+  <path d="M667,104 L667,248" fill="none" stroke="#b5367a" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+  <text x="659" y="185" text-anchor="end" font-size="13" fill="#b5367a">exactly these</text>
+  <text x="659" y="202" text-anchor="end" font-size="13" fill="#b5367a">packages</text>
+
+  <line x1="735" y1="278" x2="798" y2="278" stroke="#555" stroke-width="2.2" marker-end="url(#ah)"/>
+  
+  <text x="772" y="268" text-anchor="middle" font-size="13"><tspan font-weight="bold">④</tspan> run</text>
+
+  <line x1="735" y1="80" x2="798" y2="80" stroke="#555" stroke-width="1.8" marker-end="url(#ah)"/>
+  <text x="772" y="72" text-anchor="middle" font-size="13">git</text>
+</svg>

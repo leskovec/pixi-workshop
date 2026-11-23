@@ -1,0 +1,19 @@
+# The workshop slides, made with Slidev (https://sli.dev).
+# pixi provides Node.js; npm installs Slidev from package-lock.json.
+#
+#   pixi run dev       # live preview at http://localhost:3030
+#   pixi run export    # slides.pdf
+
+[workspace]
+name = "pixi-workshop-slides"
+channels = ["conda-forge"]
+platforms = ["linux-64", "linux-aarch64", "osx-arm64", "osx-64"]
+
+[dependencies]
+nodejs = "24.*"
+
+[tasks]
+npm-install = { cmd = "npm ci", inputs = ["package-lock.json"], outputs = ["node_modules/.package-lock.json"] }
+dev = { cmd = "npx slidev --open", depends-on = ["npm-install"], description = "Live preview" }
+build = { cmd = "npx slidev build", depends-on = ["npm-install"], description = "Static site in dist/" }
+export = { cmd = "npx slidev export --output slides.pdf", depends-on = ["npm-install"], description = "PDF export" }

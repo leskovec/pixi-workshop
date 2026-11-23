@@ -1,0 +1,16 @@
+# pixi environments and build artefacts
+.pixi/
+build/
+output/
+dist/
+data/
+
+# pixi-pack output
+*.tar
+*-installer.sh
+env/
+activate.sh
+
+# Python and macOS
+__pycache__/
+.DS_Store
