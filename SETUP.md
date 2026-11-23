@@ -47,7 +47,6 @@ rank 0 of 2: setup OK
 rank 1 of 2: setup OK
 ```
 
-If this fails, send the full output to  before the workshop.
 
 ## 5. Optional: cluster access
 
