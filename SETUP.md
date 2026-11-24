@@ -48,6 +48,6 @@ rank 1 of 2: setup OK
 ```
 
 
-## 5. Optional: cluster access
+## 5. The cluster
 
-Part of the second half is demonstrated on a SLING cluster. If you have an account, you can follow along there; see `hpc/pixi-env.sh` for the one-time pixi setup on a cluster.
+In the second half you run jobs on the NSC cluster at IJS. You get a user name and a password during the workshop, so there is nothing to prepare except an SSH client: it is built into macOS and Linux, and on Windows use the one in WSL2.

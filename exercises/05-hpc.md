@@ -37,21 +37,40 @@ ls /tmp/pixi-envs
 pixi config unset --local detached-environments
 ```
 
-## 3. On the cluster (demo)
+## 3. On the NSC cluster
+
+You get a user name (`pixi001` to `pixi030`) and a password during the workshop. Two nodes, `nsc-lou001` and `nsc-lou002`, are reserved for us; the job scripts in `hpc/` ask for the reservation `delavnica`.
 
 ```bash
-source pixi-env.sh                         # see hpc/pixi-env.sh
-git clone https://github.com/leskovec/pixi-workshop.git && cd pixi-workshop/grayscott
-cp ../solutions/block-7-pixi-build/grayscott/pixi.toml .
-pixi install --locked -e prod              # on the login node: solve + download once
-sbatch ../hpc/grayscott-bundled.sbatch     # job uses --as-is
+ssh pixiXXX@nsc-login.ijs.si               # your own number
+
+# once: pixi and the material
+curl -fsSL https://pixi.sh/install.sh | PIXI_VERSION=v0.84.2 bash
+export PATH=$HOME/.pixi/bin:$PATH
+git clone https://github.com/leskovec/pixi-workshop.git
+cd pixi-workshop/grayscott
 ```
 
-What to point out in `hpc/grayscott-bundled.sbatch`:
+The manifest and the lock file come from git: the lock file was solved on a laptop, and `--locked` makes the cluster install exactly that.
 
-- absolute `cd` to the project, jobs do not start in the submit directory on every system
-- `eval "$(pixi shell-hook -e prod --as-is)"` activates once; `srun pixi run ...` would start pixi in every rank
+```bash
+cp ../solutions/block-7-pixi-build/grayscott/pixi.{toml,lock} .
+pixi install --locked -e prod              # on the login node: download and build once
+sbatch ../hpc/grayscott-bundled.sbatch     # the job uses --as-is
+squeue -u $USER
+cat gs-bundled-*.out
+```
+
+`pixi install` also builds the solver as a conda package; block 7 shows how that works.
+
+What to look at in `hpc/grayscott-bundled.sbatch`:
+
+- `#SBATCH --reservation=delavnica` sends the job to the workshop nodes
+- `eval "$(pixi shell-hook -e prod --as-is)"` activates once in the batch shell; `srun pixi run ...` would start pixi in every rank
+- `--as-is`: the job never solves, downloads or installs, so compute nodes need no internet
 - no conda or Python modules loaded
+
+For your own projects, `hpc/pixi-env.sh` shows how to keep pixi's cache and environments out of a small `$HOME`.
 
 ## 4. Jupyter on a cluster
 

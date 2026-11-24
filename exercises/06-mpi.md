@@ -74,12 +74,18 @@ pixi list -e cluster --platform linux-64 | grep -E "openmpi|mpi4py"
 
 Note that `cluster` has no `solve-group`: it must be solved separately because its `openmpi` differs from the one in `default`.
 
-## 5. On the cluster (demo)
+## 5. On the NSC cluster
+
+In `pixi-workshop/grayscott` on NSC, with the manifest and lock file from block 5. They already contain the `cluster` environment.
 
 ```bash
-module load OpenMPI/5.0.x                  # adapt
+module load OpenMPI/5.0.x                  # the site's Open MPI
 pixi install --locked -e cluster
-pixi run -e cluster --frozen build
+pixi run -e cluster --frozen build         # compiled against the site's MPI
 sbatch ../hpc/grayscott-system.sbatch
-sbatch ../hpc/grayscott-bundled.sbatch     # compare the timings
+sbatch ../hpc/grayscott-bundled.sbatch
+squeue -u $USER
+grep -h Mcell gs-system-*.out gs-bundled-*.out   # compare, once both have run
 ```
+
+`build/grayscott --version` in `gs-system-*.out` names the site's Open MPI; the bundled run names conda-forge's.

@@ -1,25 +1,25 @@
 #!/bin/bash
-# Build and run the solver against the cluster's own Open MPI (block 6/7
+# Build and run the solver against the cluster's own Open MPI (block 7
 # manifest, `cluster` environment with the external_* placeholder).
-# On the login node, once:
+# On the login node, once, in pixi-workshop/grayscott:
 #
 #   module load OpenMPI/5.0.x          # adapt; match the version in pixi.toml
-#   cd /path/to/grayscott
 #   pixi install --locked -e cluster
 #   pixi run -e cluster --frozen build
 #
-# then submit: sbatch grayscott-system.sbatch
+# then submit from the same folder: sbatch ../hpc/grayscott-system.sbatch
 
 #SBATCH --job-name=gs-system
-#SBATCH --partition=cpu            # adapt to the cluster
+#SBATCH --reservation=delavnica    # workshop nodes on NSC; remove outside the workshop
+##SBATCH --partition=<partition>   # not needed with the reservation; set it otherwise
 #SBATCH --nodes=2
-#SBATCH --ntasks-per-node=8
+#SBATCH --ntasks-per-node=4
 #SBATCH --time=00:10:00
 #SBATCH --output=gs-system-%j.out
 
 set -euo pipefail
 module load OpenMPI/5.0.x          # adapt, same as above
-cd /path/to/grayscott
+cd "$SLURM_SUBMIT_DIR"             # the grayscott/ folder you submitted from
 
 eval "$(pixi shell-hook -e cluster --as-is)"
 

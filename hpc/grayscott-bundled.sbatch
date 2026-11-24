@@ -2,19 +2,22 @@
 # Run the packaged solver with Open MPI from conda-forge (block 7 manifest,
 # `prod` environment). Install the environment on the login node first:
 #
-#   cd /path/to/grayscott && pixi install --locked -e prod
+#   cd pixi-workshop/grayscott
+#   cp ../solutions/block-7-pixi-build/grayscott/pixi.{toml,lock} .
+#   pixi install --locked -e prod
 #
-# then submit from anywhere: sbatch grayscott-bundled.sbatch
+# then submit from the same folder: sbatch ../hpc/grayscott-bundled.sbatch
 
 #SBATCH --job-name=gs-bundled
-#SBATCH --partition=cpu            # adapt to the cluster
+#SBATCH --reservation=delavnica    # workshop nodes on NSC; remove outside the workshop
+##SBATCH --partition=<partition>   # not needed with the reservation; set it otherwise
 #SBATCH --nodes=2
-#SBATCH --ntasks-per-node=8
+#SBATCH --ntasks-per-node=4
 #SBATCH --time=00:10:00
 #SBATCH --output=gs-bundled-%j.out
 
 set -euo pipefail
-cd /path/to/grayscott              # absolute path to the project
+cd "$SLURM_SUBMIT_DIR"             # the grayscott/ folder you submitted from
 
 # Activate once in the batch shell. --as-is: no solve, no install, no network.
 # (`srun pixi run ...` would start pixi once per MPI rank.)
