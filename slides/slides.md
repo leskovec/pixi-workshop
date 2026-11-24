@@ -41,11 +41,11 @@ Welcome. Cover image: the Gray-Scott solver we build today, 640x640 grid, 30000 
 
 **Part 1: introduction and setup**
 
-- Welcome, setup check
-- Environment management on HPC
-- *Hands-on:* first workspace
-- Tasks, features, environments
-- *Hands-on:* the example becomes a project
+0. Welcome, setup check
+1. Environment management on HPC
+2. *Hands-on:* first workspace
+3. Tasks, features, environments
+4. *Hands-on:* the example becomes a project
 
 *Break*
 
@@ -54,11 +54,11 @@ Welcome. Cover image: the Gray-Scott solver we build today, 640x640 grid, 30000 
 
 **Part 2: practical workflow**
 
-- Pixi on a cluster, `--locked` vs `--frozen`
-- *Hands-on:* MPI, bundled vs system
-- *Hands-on:* packaging with pixi-build
-- *Hands-on:* shipping with pixi-pack
-- For fun, wrap-up
+5. *Hands-on:* pixi on a cluster, `--locked` vs `--frozen`
+6. *Hands-on:* MPI, bundled vs system
+7. *Hands-on:* packaging with pixi-build
+8. *Hands-on:* shipping with pixi-pack
+9. For fun, wrap-up
 
 </div>
 </div>
@@ -303,7 +303,7 @@ The solver is finished and works. We take it as given, like a code you inherit f
 | | |
 |---|---|
 | by hand with CMake, then as pixi tasks | block 4 |
-| on a cluster with Slurm | block 5 |
+| on a remote cluster | block 5 |
 | with bundled MPI and with the cluster's MPI | block 6 |
 | as a conda package with pixi-build | block 7 |
 | as a self-contained archive with pixi-pack, instead of a container | block 8 |
@@ -370,6 +370,8 @@ Native installer with a pinned version: $Env:PIXI_VERSION = "v0.84.2"; powershel
 
 # Setup check
 
+<div class="step-tag">block 0</div>
+
 ```bash
 git clone https://github.com/leskovec/pixi-workshop.git
 cd pixi-workshop/setup
@@ -387,7 +389,7 @@ The first run downloads compilers, Open MPI and Python, so it takes a few minute
 
 On Windows, run this inside WSL2: the workshop example uses MPI, and conda-forge has no Open MPI for Windows.
 
-Stuck? Post the error in the chat. Every hands-on block has a complete solution in `solutions/`, so you can always copy it in and continue.
+Stuck? Post the error in the chat. Every step has a number; `solutions/4.3/pixi.toml` is the manifest after step 4.3, so you can always copy it in and continue.
 
 </div>
 
@@ -396,6 +398,8 @@ layout: section
 ---
 
 # Environment management on HPC
+
+Block 1
 
 ---
 zoom: 0.9
@@ -756,13 +760,120 @@ Ask the audience who uses containers today and why. Collect the reasons in the c
 -->
 
 ---
-layout: center
-class: text-center
----
 
 # Hands-on: first workspace
 
-`exercises/02-first-workspace.md`
+<div class="opacity-70 -mt-2">Block 2 · in <code>~/pixi-playground</code></div>
+
+<div class="steps" style="grid-template-rows: repeat(4, auto)">
+<div><b>2.1</b> Create a workspace</div>
+<div><b>2.2</b> Add dependencies, look at the lock file</div>
+<div><b>2.3</b> Run things in the environment</div>
+<div><b>2.4</b> Inspect: <code>list</code>, <code>tree</code>, <code>search</code>, <code>info</code></div>
+<div><b>2.5</b> PyPI packages</div>
+<div><b>2.6</b> Versions, removing, updating</div>
+<div><b>2.7</b> Tools outside projects</div>
+<div><b>2.8</b> Cleaning up</div>
+</div>
+---
+
+# 2.1 Create a workspace
+
+```bash
+mkdir -p ~/pixi-playground && cd ~/pixi-playground
+pixi init demo
+cd demo
+cat pixi.toml
+```
+
+The manifest lists the channels (where packages come from) and the platforms (which operating systems the lock file covers).
+
+---
+
+# 2.2 Add dependencies, look at the lock file
+
+```bash
+pixi add python numpy matplotlib-base
+cat pixi.toml
+less pixi.lock          # /numpy- and Enter jumps to numpy, q quits
+```
+
+- Which version of numpy did you get? Where is it written down?
+- Find the URL and the sha256 of the numpy package in `pixi.lock`
+- Where did pixi install it? `ls .pixi/envs/default`
+
+---
+
+# 2.3 Run things in the environment
+
+```bash
+pixi run python -c "import numpy; print(numpy.__version__, numpy.__file__)"
+pixi shell          # a shell with the environment active; leave with exit
+```
+
+- There is no `activate` and no base environment
+- `pixi run` first makes sure the environment matches the lock file
+
+---
+
+# 2.4 Inspect
+
+```bash
+pixi list
+pixi tree numpy            # what numpy pulls in
+pixi tree -i libopenblas   # the other way round: why is OpenBLAS here?
+pixi search scipy
+pixi info
+```
+
+---
+
+# 2.5 PyPI packages
+
+Some packages exist only on PyPI. Pixi resolves them together with the conda packages (using uv underneath):
+
+```bash
+pixi add --pypi cowsay
+pixi run python -c "import cowsay; cowsay.cow('hello from PyPI')"
+grep -A2 pypi-dependencies pixi.toml
+```
+
+---
+
+# 2.6 Versions, removing, updating
+
+```bash
+pixi add "python=3.12.*"     # pin a version range
+pixi remove matplotlib-base
+pixi update                  # newest versions allowed by pixi.toml, rewrites pixi.lock
+pixi upgrade                 # also loosens the constraints in pixi.toml
+git diff pixi.toml           # (if you ran git init) see what upgrade changed
+```
+
+`update` respects the constraints in `pixi.toml`; `upgrade` changes them.
+
+---
+
+# 2.7 Tools outside projects
+
+```bash
+pixi global install ripgrep      # installs rg into its own environment, on your PATH
+pixi global list
+pixi exec --spec python=3.11 python -V          # one-off command, temporary environment
+echo "no installation needed" | pixi exec cowpy
+```
+
+---
+
+# 2.8 Cleaning up
+
+```bash
+pixi info | grep -i cache    # the shared package cache
+pixi clean                   # removes .pixi/ in this workspace
+```
+
+- Deleting `.pixi/` is always safe: `pixi install` recreates it from `pixi.lock`
+- `pixi clean cache` empties the shared cache. Not now: the next blocks need it
 
 ---
 layout: section
@@ -770,11 +881,41 @@ layout: section
 
 # Organising a project
 
-Tasks, features, environments
+Block 3 · Tasks, features, environments
+
+---
+zoom: 0.84
+---
+
+# From code to manifest
+
+<div class="step-tag">step 4.1</div>
+
+You get code and no environment. The build files and imports say what it needs:
+
+| In the code | conda-forge package |
+|---|---|
+| `cmake_minimum_required(VERSION 3.20)` | `cmake >=3.20` |
+| `project(grayscott ... LANGUAGES CXX)` | `cxx-compiler` |
+| `find_package(MPI REQUIRED ...)` | `openmpi` |
+| we build with `cmake -G Ninja` | `ninja` |
+| `import numpy`, `import matplotlib` | `python`, `numpy`, `matplotlib-base` |
+
+```bash
+pixi init
+pixi add "cmake>=3.20" ninja cxx-compiler openmpi "python=3.13.*" numpy matplotlib-base
+```
+
+- `pixi search <name>` checks the conda-forge name
+- Forgot `cxx-compiler`? CMake quietly takes the system's `/usr/bin/c++`
+- Got an `environment.yml`? `pixi init --import environment.yml` (step 4.7)
 
 ---
 
 # Tasks
+
+<div class="step-tag">step 4.3</div>
+
 
 ```toml {all|2-4|5|6-10|all}
 [tasks]
@@ -799,6 +940,9 @@ run = { cmd = "mpirun -n {{ ranks }} build/grayscott --size {{ size }}",
 ---
 
 # Features and environments
+
+<div class="step-tag">step 4.4</div>
+
 
 ```toml {all|1-4|6-9|11-14|all}
 [feature.build.dependencies]      # compilers, only for development
@@ -831,6 +975,9 @@ layout: fact
 
 # 1.1 GB → 84 MB
 
+<div class="step-tag">step 4.4</div>
+
+
 `default` vs `prod` for the Gray-Scott solver on macOS
 
 <div class="mt-6 text-base opacity-80">
@@ -845,6 +992,9 @@ Measured with du -sh .pixi/envs/* on osx-arm64. The Gray Scott school reports 1.
 ---
 
 # Platforms
+
+<div class="step-tag">step 4.6</div>
+
 
 ```toml
 [workspace]
@@ -864,13 +1014,390 @@ show = "open output/v.png"
 
 
 ---
-layout: center
-class: text-center
----
 
 # Hands-on: the example becomes a project
 
-`exercises/04-project.md`
+<div class="opacity-70 -mt-2">Block 4 · in <code>grayscott/</code></div>
+
+<div class="steps" style="grid-template-rows: repeat(4, auto)">
+<div><b>4.1</b> Write <code>pixi.toml</code> from the code</div>
+<div><b>4.2</b> Build and run by hand</div>
+<div><b>4.3</b> Tasks</div>
+<div><b>4.4</b> Features and environments</div>
+<div><b>4.5</b> A test</div>
+<div><b>4.6</b> More platforms</div>
+<div><b>4.7</b> conda in and out</div>
+<div><b>4.8</b> Commit</div>
+</div>
+<div class="catchup">
+
+Behind? `cp ../solutions/4.3/pixi.toml .` &nbsp;·&nbsp; snapshots after 4.1, 4.3, 4.4, 4.5
+
+</div>
+
+---
+zoom: 0.9
+---
+
+# 4.1 Write pixi.toml from the code (1/2)
+
+You got the code and nothing else. In `grayscott/`:
+
+```bash
+pixi init
+cat CMakeLists.txt
+head -20 scripts/plot.py
+```
+
+Start with the build tools only, and try to configure:
+
+```bash
+pixi add "cmake>=3.20" ninja
+pixi run cmake -S . -B build -G Ninja
+```
+
+Read the output before the error:
+
+- `Check for working CXX compiler: /usr/bin/c++`: the system compiler, not one from the environment. Pixi puts the environment first on `PATH`; it does not hide the rest
+- `Could NOT find MPI`: nothing provides MPI
+
+---
+zoom: 0.9
+---
+
+# 4.1 Write pixi.toml from the code (2/2)
+
+Look the missing pieces up, add them, configure again from scratch (CMake remembers the compiler in `build/`):
+
+```bash
+pixi search openmpi
+pixi add openmpi cxx-compiler
+rm -rf build
+pixi run cmake -S . -B build -G Ninja     # compiler and MPI now from .pixi/envs/default
+```
+
+The Python side:
+
+```bash
+pixi add "python=3.13.*" numpy matplotlib-base
+cat pixi.toml
+```
+
+- 3.13 is the Python the setup check already downloaded
+- `matplotlib-base` is matplotlib without the GUI toolkits, enough for PNG files
+
+<div class="catchup">
+
+Behind? `cp ../solutions/4.1/pixi.toml .`
+
+</div>
+
+---
+
+# 4.2 Build and run by hand
+
+```bash
+pixi run cmake --build build
+pixi run mpirun -n 2 build/grayscott --size 256 --steps 10000
+pixi run python scripts/plot.py output/v.npy
+open output/v.png        # macOS; on Linux: xdg-open
+```
+
+Four long commands nobody will remember. Tasks next.
+
+---
+zoom: 0.82
+---
+
+# 4.3 Tasks
+
+```bash
+pixi task add configure "cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release"
+pixi task add build "cmake --build build" --depends-on configure
+pixi task add plot "python scripts/plot.py output/v.npy"
+pixi task list
+```
+
+Then add `run` by hand, under `[tasks]` in `pixi.toml`:
+
+```toml
+run = { cmd = "mpirun --oversubscribe -n {{ ranks }} build/grayscott --size {{ size }} --steps {{ steps }}",
+        args = [{ arg = "ranks", default = "2" }, { arg = "size", default = "256" },
+                { arg = "steps", default = "10000" }],
+        depends-on = ["build"] }
+```
+
+```bash
+pixi run run            # defaults
+pixi run run 4 512      # 4 ranks, 512 x 512
+```
+
+<div class="catchup">
+
+Behind? `cp ../solutions/4.3/pixi.toml .`
+
+</div>
+
+---
+zoom: 0.9
+---
+
+# 4.4 Features and environments
+
+<div class="grid grid-cols-2 gap-6">
+<div>
+
+Split the dependencies:
+
+- `[feature.build.dependencies]`: `cxx-compiler`, `cmake`, `ninja`
+- `[feature.analysis.dependencies]`: `python`, `numpy`, `matplotlib-base`
+- `[dependencies]`: only `openmpi`
+
+Move each task into the feature it needs: `[feature.build.tasks]`, `[feature.analysis.tasks]`.
+
+</div>
+<div>
+
+```toml
+[environments]
+default = { features = ["build", "analysis"],
+            solve-group = "main" }
+analysis = { features = ["analysis"],
+             solve-group = "main" }
+prod = { features = [], solve-group = "main" }
+```
+
+</div>
+</div>
+
+```bash
+pixi install --all
+pixi list -e prod          # how much smaller is it?
+pixi run -e analysis plot
+du -sh .pixi/envs/*
+```
+
+<div class="catchup">
+
+Behind? `cp ../solutions/4.4/pixi.toml .`
+
+</div>
+
+---
+
+# 4.5 A test
+
+1 rank and 4 ranks must give bitwise identical output.
+
+- Add a `test` feature with `python` and `numpy`, and add it to `default`
+- Two tasks that run the solver with 1 and with 4 ranks, writing `output/test-1.npy` and `output/test-4.npy`
+- A `test` task that compares them with `python scripts/compare.py output/test-1.npy output/test-4.npy`, with `depends-on` on both runs
+
+```bash
+pixi run test        # max |a - b| = 0.000e+00
+```
+
+<div class="catchup">
+
+Behind? `cp ../solutions/4.5/pixi.toml .`
+
+</div>
+
+---
+
+# 4.6 More platforms
+
+```bash
+wc -l pixi.lock
+pixi workspace platform add linux-64 linux-aarch64 osx-arm64 osx-64
+wc -l pixi.lock
+```
+
+- The lock file now pins every package for all four platforms
+- A colleague on a Linux cluster gets exactly the versions you tested on your Mac
+- No `win-64`: conda-forge has no Open MPI for Windows
+
+---
+zoom: 0.9
+---
+
+# 4.7 conda in and out
+
+A colleague has used this code with conda all along: `environment.yml` is their environment. Pixi can start from it instead of from the code. Compare with what you wrote in 4.1:
+
+```bash
+mkdir /tmp/import && cd /tmp/import
+pixi init --import ~/pixi-workshop/grayscott/environment.yml    # adapt the path
+cat pixi.toml
+cd -
+```
+
+The other direction, for colleagues who stay with conda:
+
+```bash
+pixi workspace export conda-environment -e default > environment-dev.yml
+pixi workspace export conda-explicit-spec -e prod --platform linux-64 explicit/
+```
+
+---
+
+# 4.8 Commit
+
+```bash
+git add pixi.toml pixi.lock
+```
+
+- `pixi.toml` and `pixi.lock` belong in git
+- `.pixi/` does not; `pixi init` put it in `.gitignore`
+
+---
+layout: section
+---
+
+# Pixi on a cluster
+
+Block 5 · `--locked`, `--frozen`, `--as-is`
+
+---
+
+# Hands-on: pixi on a cluster
+
+<div class="opacity-70 -mt-2">Block 5 · 5.1–5.2 on the laptop, 5.3 on NSC</div>
+
+<div class="steps" style="grid-template-rows: repeat(2, auto)">
+<div><b>5.1</b> <code>--locked</code>, <code>--frozen</code>, <code>--as-is</code></div>
+<div><b>5.2</b> Keep environments out of <code>$HOME</code></div>
+<div><b>5.3</b> On the NSC cluster: install from the lock file, run with 8 ranks</div>
+<div><b>5.4</b> Jupyter on a cluster</div>
+</div>
+<div class="catchup">
+
+On NSC: `ssh pixiXXX@nsc-login.ijs.si`, then `salloc --reservation=delavnica --nodes=1 --ntasks=8 --time=02:00:00`
+
+</div>
+
+---
+
+# 5.1 --locked, --frozen, --as-is
+
+| Option | Checks lock vs manifest | Solves, rewrites lock | Installs | Use for |
+|---|---|---|---|---|
+| (none) | yes | yes | yes | everyday development |
+| `--locked` | yes, error if out of date | no | yes | reproducing a committed environment |
+| `--frozen` | no | no | yes, exactly `pixi.lock` | machines where nothing may change |
+| `--as-is` | no | no | no | running an installed environment without touching it |
+
+The same as environment variables: `PIXI_LOCKED=1`, `PIXI_FROZEN=1`.
+
+---
+zoom: 0.88
+---
+
+# 5.1 Try it: manifest and lock file disagree
+
+```bash
+mkdir /tmp/lockdemo && cd /tmp/lockdemo
+pixi init && pixi add tree
+```
+
+Add jq to the manifest by hand, without relocking:
+
+```bash
+echo 'jq = "*"' >> pixi.toml   # [dependencies] is the last table
+pixi install --locked          # refuses: the lock file no longer matches
+pixi install --frozen          # installs exactly pixi.lock: no jq
+pixi run --frozen which jq     # if anything: the system's jq
+pixi run --as-is tree -L 1 .pixi
+pixi install                   # relocks and installs, now jq is there
+pixi run which jq
+```
+
+A package missing from the environment can quietly come from the system: pixi puts the environment first on `PATH`, it does not remove the rest.
+
+---
+zoom: 0.84
+---
+
+# 5.2 Keep environments out of $HOME
+
+Environments are many small files and quickly fill a home quota. On a cluster, add to `~/.bashrc`:
+
+```bash
+PIXI_BASE=/path/to/project/storage/$USER       # adapt
+export PIXI_HOME=$PIXI_BASE/pixi               # pixi itself, global tools, global config
+export PIXI_CACHE_DIR=$PIXI_BASE/pixi-cache    # downloads; same filesystem as the envs
+export PATH=$PIXI_HOME/bin:$PATH
+```
+
+and once: `pixi config set --global detached-environments "$PIXI_BASE/pixi-envs"`
+
+Try detached environments in one project, on your laptop:
+
+```bash
+cd grayscott
+pixi config set --local detached-environments /tmp/pixi-envs
+pixi install && ls /tmp/pixi-envs
+pixi config unset --local detached-environments
+```
+
+---
+zoom: 0.9
+---
+
+# 5.3 On the NSC cluster: log in
+
+You get a user name (`pixi001` to `pixi030`) and a password. Two nodes, `nsc-lou001` and `nsc-lou002`, are reserved for us.
+
+```bash
+ssh pixiXXX@nsc-login.ijs.si               # your own number
+salloc --reservation=delavnica --nodes=1 --ntasks=8 --time=02:00:00
+hostname                                   # nsc-lou001 or nsc-lou002
+```
+
+Everything from here on runs on that node. First pixi and the material:
+
+```bash
+curl -fsSL https://pixi.sh/install.sh | PIXI_VERSION=v0.84.2 bash
+export PATH=$HOME/.pixi/bin:$PATH
+git clone https://github.com/leskovec/pixi-workshop.git
+cd pixi-workshop/grayscott
+```
+
+---
+zoom: 0.84
+---
+
+# 5.3 On the NSC cluster: install and run
+
+The manifest and lock file come from git. The lock file was solved on a laptop; `--locked` installs exactly that, or refuses.
+
+```bash
+cp ../solutions/7.2/pixi.{toml,lock} .
+pixi install --locked -e prod              # download, and build the solver once
+```
+
+Activate once, without checking or installing anything, and run on all 8 cores:
+
+```bash
+bash                                       # a sub-shell, so the activation is easy to leave
+eval "$(pixi shell-hook -e prod --as-is)"
+which grayscott mpirun
+mpirun -n 8 grayscott --size 4096 --steps 2000 --output output/bundled.npy
+exit                                       # back to the plain shell on the node
+```
+
+`exit` without the sub-shell would end the whole `salloc` session.
+
+---
+
+# 5.4 Jupyter on a cluster
+
+Pixi has no environment registry, so Jupyter does not find environments by itself. Add `ipykernel` and register the environment as a kernel:
+
+```bash
+pixi add -f analysis ipykernel
+pixi run -e analysis python -m ipykernel install --user --name grayscott-analysis
+```
 
 ---
 layout: section
@@ -919,6 +1446,158 @@ The network is the one layer pixi cannot just download the right thing for. Henc
 -->
 
 ---
+zoom: 0.9
+---
+
+# Two ways to get MPI
+
+| Route | In `pixi.toml` | Pros | Cons |
+|---|---|---|---|
+| bundled | `openmpi = ">=5.0,<6"` from conda-forge | identical on laptop and cluster, fully locked; includes UCX for InfiniBand | the fastest network settings need testing on each cluster |
+| system | `openmpi = { version = "5.0.*", build = "external_*" }` plus `module load` | uses the MPI the centre tuned for its network | not self-contained; version must match the module; Linux only |
+
+- `external_*` is a placeholder package: no MPI library inside, it only says "MPI is provided"
+- mpi4py and anything else using MPI is built against conda-forge's headers and runs with the system library
+- MPICH, Intel MPI, Cray MPICH: `mpich = { version = "4.*", build = "external_*" }`
+
+---
+
+# Hands-on: MPI, bundled vs system
+
+<div class="opacity-70 -mt-2">Block 6 · in <code>grayscott/</code>, from 4.5</div>
+
+<div class="steps" style="grid-template-rows: repeat(3, auto)">
+<div><b>6.1</b> MPI only where it is needed</div>
+<div><b>6.2</b> mpi4py and a <code>hello</code> task</div>
+<div><b>6.3</b> The solver with more ranks</div>
+<div><b>6.4</b> A cluster environment with the system MPI</div>
+<div><b>6.5</b> On the NSC cluster: system MPI vs bundled</div>
+</div>
+<div class="catchup">
+
+Behind? `cp ../solutions/6.1/pixi.toml .` &nbsp;·&nbsp; snapshots after 6.1, 6.2, 6.4
+
+</div>
+
+---
+
+# 6.1 MPI only where it is needed
+
+In `grayscott/`, from the end of block 4. `openmpi` is in `[dependencies]`, so even the plotting environment has it. Move it into a feature:
+
+```toml
+[feature.mpi-bundled.dependencies]
+openmpi = ">=5.0,<6"
+```
+
+and add `mpi-bundled` to the `default` and `prod` environments, not to `analysis`.
+
+```bash
+pixi list -e analysis | grep -i mpi     # nothing
+```
+
+<div class="catchup">
+
+Behind? `cp ../solutions/6.1/pixi.toml .`
+
+</div>
+
+---
+zoom: 0.92
+---
+
+# 6.2 mpi4py
+
+```toml
+[feature.mpi-python.dependencies]
+python = "3.13.*"
+mpi4py = ">=4"
+
+[feature.mpi-python.tasks]
+hello = { cmd = "mpirun --oversubscribe -n {{ ranks }} python scripts/hello_mpi.py",
+          args = [{ arg = "ranks", default = "4" }] }
+```
+
+Add `mpi-python` to the `default` environment.
+
+```bash
+pixi run hello
+pixi run hello 8
+```
+
+<div class="catchup">
+
+Behind? `cp ../solutions/6.2/pixi.toml .`
+
+</div>
+
+---
+
+# 6.3 The solver with more ranks
+
+```bash
+pixi run run 1 1024 2000
+pixi run run 4 1024 2000
+pixi run test                            # 1 rank vs 4 ranks, bitwise identical
+pixi run build/grayscott --version       # which MPI library is it linked to?
+```
+
+---
+zoom: 0.88
+---
+
+# 6.4 A cluster environment with the system MPI
+
+```toml
+[feature.mpi-system]
+platforms = ["linux-64", "linux-aarch64"]
+channels = [{ channel = "conda-forge/label/mpi-external", priority = 1 }]
+
+[feature.mpi-system.dependencies]
+openmpi = { version = "5.0.*", build = "external_*" }
+
+[environments]
+cluster = { features = ["mpi-system", "build", "mpi-python", "test"] }
+```
+
+```bash
+pixi lock
+pixi list -e cluster --platform linux-64 | grep -E "openmpi|mpi4py"
+```
+
+`cluster` has no `solve-group`: its `openmpi` differs from the one in `default`, so it is solved on its own.
+
+<div class="catchup">
+
+Behind? `cp ../solutions/6.4/pixi.toml .`
+
+</div>
+
+---
+zoom: 0.8
+---
+
+# 6.5 On the NSC cluster: system MPI vs bundled
+
+On the node from 5.3, in `pixi-workshop/grayscott`. The manifest and lock file already contain the `cluster` environment.
+
+```bash
+module load OpenMPI/5.0.x                  # the site's Open MPI; module avail openmpi lists them
+pixi install --locked -e cluster
+pixi run -e cluster --frozen build         # compiled against the site's MPI
+pixi run -e cluster --frozen build/grayscott --version
+pixi run -e cluster --frozen mpirun -n 8 build/grayscott --size 4096 --steps 2000 --output output/system.npy
+```
+
+The bundled run from 5.3, to compare:
+
+```bash
+pixi run -e prod --frozen mpirun -n 8 grayscott --size 4096 --steps 2000 --output output/bundled.npy
+```
+
+`--version` names the site's Open MPI for `cluster`, conda-forge's for `prod`. Compare the Mcell-updates/s.
+
+---
 layout: section
 ---
 
@@ -928,7 +1607,133 @@ Block 7
 
 ---
 
-# Optional: optimise for your CPU
+# Hands-on: packaging with pixi-build
+
+<div class="opacity-70 -mt-2">Block 7 · in <code>grayscott/</code>, from 6.4</div>
+
+<div class="steps" style="grid-template-rows: repeat(3, auto)">
+<div><b>7.1</b> Turn the workspace into a package</div>
+<div><b>7.2</b> Use the package in the <code>prod</code> environment</div>
+<div><b>7.3</b> Build the package file</div>
+<div><b>7.4</b> Use it from another project (<code>analysis/</code>)</div>
+<div><b>7.5</b> Optional: optimise for your CPU</div>
+</div>
+<div class="catchup">
+
+Behind? `cp ../solutions/7.1/pixi.toml .` &nbsp;·&nbsp; snapshots after 7.1, 7.2, 7.4 (in <code>analysis/</code>)
+
+</div>
+---
+zoom: 0.82
+---
+
+# 7.1 Turn the workspace into a package
+
+Until now everyone compiled the solver in a development environment. As a conda package it installs like numpy: no compilers, no `build/`, a fixed version.
+
+```bash
+pixi workspace preview add pixi-build       # still a preview feature in pixi 0.84
+```
+
+```toml
+[package]
+name = "grayscott"
+version = "0.1.0"
+
+[package.build]
+backend = { name = "pixi-build-cmake", version = "*" }
+
+[package.host-dependencies]
+openmpi = ">=5.0,<6"
+```
+
+- The CMake backend runs `cmake`, `cmake --build`, `cmake --install` with conda-forge compilers
+- Host dependencies are compiled and linked against; Open MPI's run-exports add the run dependency
+
+<div class="catchup">
+
+Behind? `cp ../solutions/7.1/pixi.toml .`
+
+</div>
+
+---
+zoom: 0.82
+---
+
+# 7.2 Use the package in the prod environment
+
+```toml
+[feature.solver.dependencies]
+grayscott = { path = "." }
+
+[feature.solver.tasks]
+simulate = { cmd = "mpirun --oversubscribe -n {{ ranks }} grayscott --size {{ size }} --steps {{ steps }}",
+             args = [{ arg = "ranks", default = "2" }, { arg = "size", default = "256" },
+                     { arg = "steps", default = "10000" }] }
+```
+
+and change `prod` to `{ features = ["mpi-bundled", "solver"], solve-group = "main" }`.
+
+```bash
+pixi install -e prod             # builds the package, then installs it
+pixi list -e prod                # grayscott, openmpi, no compilers
+pixi run -e prod which grayscott
+pixi run -e prod simulate 4
+```
+
+<div class="catchup">
+
+Behind? `cp ../solutions/7.2/pixi.toml .`
+
+</div>
+
+---
+
+# 7.3 Build the package file
+
+```bash
+pixi build -o dist
+ls dist/                         # grayscott-0.1.0-<hash>_0.conda
+pixi exec rattler-build package inspect dist/grayscott-*.conda
+```
+
+Look for the run dependencies: `openmpi >=5.0.x,<6.0a0` was added by Open MPI's run-exports. Nobody wrote it.
+
+---
+zoom: 0.88
+---
+
+# 7.4 Use it from another project
+
+`analysis/scan.py` runs the solver for six $(F, k)$ pairs and plots a gallery. It only needs `grayscott` on `PATH`.
+
+```bash
+cd ../analysis
+pixi init
+pixi workspace preview add pixi-build
+pixi add python numpy matplotlib-base
+```
+
+In `pixi.toml`, under `[dependencies]`: `grayscott = { path = "../grayscott" }`
+
+```bash
+pixi task add scan "python scan.py --ranks 4"
+pixi run scan
+open data/gallery.png
+```
+
+The analysis project does not know or care how the solver is built.
+
+<div class="catchup">
+
+Behind? `cp ../solutions/7.4/pixi.toml .   (in analysis/)`
+
+</div>
+
+---
+
+# 7.5 Optional: optimise for your CPU
+
 
 Compiler flags for your own code go into the build configuration:
 
@@ -953,6 +1758,7 @@ extra-args = ["-DCMAKE_CXX_FLAGS=-march=x86-64-v3"]
 - `pixi run -e prod simulate 1` rebuilds the package and runs it: compare Mcell-updates/s
 - On a MacBook (M1 Pro): about 490 with and without. The stencil is limited by memory, not by arithmetic
 - The flag travels with the package: built for a new CPU, it fails with *illegal instruction* on an older node
+- Remove the lines again before block 8
 
 
 </div>
@@ -964,6 +1770,14 @@ Measured on M1 Pro, 256 x 256, 10000 steps, 1 rank, three runs each: 463-496 Mce
 -->
 
 ---
+
+# Outlook: not practised today
+
+- Publish the `.conda` file to a channel (`pixi publish`, prefix.dev, S3, Artifactory) and replace `path = "../grayscott"` with a version requirement
+- Build variants: one package per MPI flavour or CPU instruction set, instead of one flag for everyone
+- Cross-compiling, e.g. `pixi build --target-platform linux-aarch64`
+
+---
 layout: section
 ---
 
@@ -972,10 +1786,90 @@ layout: section
 Block 8
 
 ---
+
+# Hands-on: shipping with pixi-pack
+
+<div class="opacity-70 -mt-2">Block 8 · in <code>grayscott/</code>, from 7.2</div>
+
+<div class="steps" style="grid-template-rows: repeat(3, auto)">
+<div><b>8.1</b> Pack the <code>prod</code> environment</div>
+<div><b>8.2</b> Unpack and run without pixi</div>
+<div><b>8.3</b> A single self-extracting installer</div>
+<div><b>8.4</b> Packing for another platform</div>
+<div><b>8.5</b> Can pixi replace a container?</div>
+</div>
+<div class="catchup">
+
+Behind? `cp ../solutions/7.2/pixi.toml .`
+
+</div>
+---
+
+# 8.1 Pack the prod environment
+
+In `grayscott/` with the block 7 manifest.
+
+```bash
+pixi global install pixi-pack pixi-unpack
+pixi-pack -e prod                      # -> environment.tar (about 25 MB)
+```
+
+pixi-pack downloads every package of `prod` from the lock file, builds `grayscott` from source with pixi-build, and puts everything into one tar file.
+
+<div class="catchup">
+
+Behind? `cp ../solutions/7.2/pixi.toml .`
+
+</div>
+
+---
+zoom: 0.88
+---
+
+# 8.2 Unpack and run without pixi
+
+```bash
+mkdir /tmp/unpacked && cp environment.tar /tmp/unpacked && cd /tmp/unpacked
+pixi-unpack environment.tar            # -> env/ and activate.sh
+ls
+
+# a clean shell, pixi not on PATH
+env -i HOME=$HOME PATH=/usr/bin:/bin bash -c \
+  'source activate.sh && mpirun --oversubscribe -n 2 grayscott --size 256 --output v.npy'
+```
+
+On a cluster it runs the same way.
+
+---
+
+# 8.3 A single self-extracting installer
+
+```bash
+cd -                                   # back to grayscott/
+pixi-pack -e prod --create-executable -o grayscott-installer.sh
+mkdir /tmp/inst && cd /tmp/inst && /path/to/grayscott-installer.sh
+```
+
+The installer contains `pixi-unpack` itself, so the target machine needs nothing but a shell.
+
+---
+
+# 8.4 Packing for another platform
+
+```bash
+pixi-pack -e prod -p linux-64 -o grayscott-linux.tar
+```
+
+- Pure conda-forge environments pack for any platform
+- Ours contains a package built from source, and C++ is not cross-compiled from macOS to Linux here, so this fails on a Mac
+- Pack on a Linux machine (WSL2, a login node, CI), or build the `.conda` there with `pixi build` and add it with `--inject grayscott-0.1.0-*.conda`
+
+---
 zoom: 0.92
 ---
 
-# Can pixi replace containers? The verdict
+# 8.5 Can pixi replace containers? The verdict
+
 
 <div class="grid grid-cols-2 gap-10 mt-2">
 <div>
@@ -1007,6 +1901,81 @@ zoom: 0.92
 glibc 2.28 = RHEL/Rocky 8 and newer. A cluster on an older OS is a case for a container.
 Ask: which of the right-hand rows matter for your own work?
 -->
+
+---
+layout: section
+---
+
+# For fun
+
+Block 9 · the same tool outside HPC
+
+---
+
+# Hands-on: for fun
+
+<div class="opacity-70 -mt-2">Block 9 · demo</div>
+
+<div class="steps" style="grid-template-rows: repeat(3, auto)">
+<div><b>9.1</b> ROOT, the particle physics toolkit</div>
+<div><b>9.2</b> samtools from bioconda, without installing it</div>
+<div><b>9.3</b> R with ggplot2</div>
+<div><b>9.4</b> ROS 2 with RViz</div>
+<div><b>9.5</b> Mojo</div>
+</div>
+---
+
+# 9.1 ROOT, the particle physics toolkit
+
+```bash
+pixi global install root
+root -l -b -q -e 'TF1 f("f","sin(x)/x",0,10); printf("integral = %g\n", f.Integral(0,10));'
+```
+
+---
+
+# 9.2 A bioconda tool, without installing it
+
+```bash
+pixi exec -c conda-forge -c bioconda samtools --version
+```
+
+---
+zoom: 0.8
+---
+
+# 9.3 R
+
+```bash
+mkdir r-demo && cd r-demo
+pixi init && pixi add r-base r-ggplot2
+pixi run Rscript -e 'library(ggplot2); ggsave("cars.png", ggplot(mtcars, aes(wt, mpg)) + geom_point())'
+```
+
+---
+
+# 9.4 ROS 2 with RViz
+
+Needs a desktop session.
+
+```bash
+mkdir ros-demo && cd ros-demo
+pixi init -c robostack-jazzy -c conda-forge
+pixi add ros-jazzy-desktop
+pixi run rviz2
+```
+
+---
+
+# 9.5 Mojo
+
+```bash
+mkdir mojo-demo && cd mojo-demo
+pixi init -c https://conda.modular.com/max -c conda-forge
+pixi add mojo
+printf 'def main():\n    print("Hello from Mojo")\n' > hello.mojo
+pixi run mojo hello.mojo
+```
 
 ---
 layout: center

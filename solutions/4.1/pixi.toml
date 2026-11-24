@@ -1,0 +1,22 @@
+# Step 4.1: pixi.toml written from what the code needs.
+# From grayscott/: cp ../solutions/4.1/pixi.toml .
+
+[workspace]
+name = "grayscott"
+version = "0.1.0"
+channels = ["conda-forge"]
+# Step 4.6 adds the other platforms. They are listed here already, so this
+# file works on any machine.
+platforms = ["linux-64", "linux-aarch64", "osx-arm64", "osx-64"]
+
+[dependencies]
+# CMakeLists.txt: cmake_minimum_required(VERSION 3.20), LANGUAGES CXX,
+# find_package(MPI), and we configure with -G Ninja.
+cmake = ">=3.20"
+ninja = "*"
+cxx-compiler = "*"
+openmpi = ">=5.0,<6"
+# scripts/plot.py: import numpy, matplotlib.
+python = "3.13.*"
+numpy = ">=2"
+matplotlib-base = "*"

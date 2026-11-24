@@ -1,60 +1,29 @@
-# Solution for block 7: the solver as a conda package built by pixi-build.
-# Copy into grayscott/ (cp solutions/block-7-pixi-build/grayscott/pixi.toml grayscott/).
+# Step 6.4: two ways to get MPI. This is the end of block 6.
+# From grayscott/: cp ../solutions/6.4/pixi.toml .
 #
-# The workspace part ([workspace], [feature.*], [environments]) is unchanged
-# from block 6. New: the [package] sections, and `grayscott` as a dependency
-# of the prod environment.
+# - mpi-bundled: Open MPI from conda-forge, identical on laptop and cluster.
+# - mpi-system:  a placeholder package that uses the cluster's own Open MPI.
+#                Load the site module first (e.g. `module load OpenMPI/5.0.x`),
+#                and keep the version below in line with it.
 
 [workspace]
 name = "grayscott"
 version = "0.1.0"
 channels = ["conda-forge"]
 platforms = ["linux-64", "linux-aarch64", "osx-arm64", "osx-64"]
-# pixi-build is still a preview feature (pixi 0.84).
-preview = ["pixi-build"]
-
-# --- the package --------------------------------------------------------------
-
-[package]
-name = "grayscott"
-version = "0.1.0"
-description = "Gray-Scott reaction-diffusion solver with MPI"
-license = "MIT"
-
-[package.build]
-backend = { name = "pixi-build-cmake", version = "*" }
-
-# Optional (exercise step 5): compiler flags for this package. One flag per
-# -DCMAKE_CXX_FLAGS value. -march=native only runs on CPUs like the build
-# machine's; -march=x86-64-v3 runs on any x86 node with AVX2.
-# [package.build.config]
-# extra-args = ["-DCMAKE_CXX_FLAGS=-march=x86-64-v3"]
-
-# Available while building and linked against. Open MPI's run-exports add a
-# run dependency `openmpi >=<version built against>,<6` to the package.
-# To also run on a cluster with an older Open MPI 5.0.x (external build),
-# pin the host version to that release, e.g. openmpi = "5.0.3.*".
-[package.host-dependencies]
-openmpi = ">=5.0,<6"
-
-# --- environments -------------------------------------------------------------
 
 [feature.mpi-bundled.dependencies]
 openmpi = ">=5.0,<6"
 
 [feature.mpi-system]
+# External MPI placeholders are Linux only and live in a separate label.
 platforms = ["linux-64", "linux-aarch64"]
 channels = [{ channel = "conda-forge/label/mpi-external", priority = 1 }]
 
 [feature.mpi-system.dependencies]
 openmpi = { version = "5.0.*", build = "external_*" }
-
-# The packaged solver, built from this directory.
-[feature.solver.dependencies]
-grayscott = { path = "." }
-
-[feature.solver.tasks]
-simulate = { cmd = "mpirun --oversubscribe -n {{ ranks }} grayscott --size {{ size }} --steps {{ steps }}", args = [{ arg = "ranks", default = "2" }, { arg = "size", default = "256" }, { arg = "steps", default = "10000" }], description = "Run the installed solver" }
+# For an MPICH-compatible site MPI (MPICH, Intel MPI, Cray MPICH) use instead:
+# mpich = { version = "4.*", build = "external_*" }
 
 [feature.build.dependencies]
 cxx-compiler = "*"
@@ -73,6 +42,7 @@ mpi4py = ">=4"
 [feature.mpi-python.tasks]
 hello = { cmd = "mpirun --oversubscribe -n {{ ranks }} python scripts/hello_mpi.py", args = [{ arg = "ranks", default = "4" }], description = "One line per MPI rank" }
 
+# Plotting needs no MPI at all.
 [feature.analysis.dependencies]
 python = "3.13.*"
 numpy = ">=2"
@@ -93,6 +63,6 @@ test = { cmd = "python scripts/compare.py output/test-1.npy output/test-4.npy", 
 [environments]
 default = { features = ["mpi-bundled", "build", "mpi-python", "analysis", "test"], solve-group = "main" }
 analysis = { features = ["analysis"], solve-group = "main" }
-# Runtime only: MPI plus the packaged solver, no compilers.
-prod = { features = ["mpi-bundled", "solver"], solve-group = "main" }
+prod = { features = ["mpi-bundled"], solve-group = "main" }
+# Build and run against the cluster's MPI. Separate solve: different openmpi build.
 cluster = { features = ["mpi-system", "build", "mpi-python", "test"] }

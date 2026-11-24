@@ -1,0 +1,28 @@
+# Step 4.3: the commands from step 4.2 as tasks.
+# From grayscott/: cp ../solutions/4.3/pixi.toml .
+
+[workspace]
+name = "grayscott"
+version = "0.1.0"
+channels = ["conda-forge"]
+# Step 4.6 adds the other platforms. They are listed here already, so this
+# file works on any machine.
+platforms = ["linux-64", "linux-aarch64", "osx-arm64", "osx-64"]
+
+[dependencies]
+# CMakeLists.txt: cmake_minimum_required(VERSION 3.20), LANGUAGES CXX,
+# find_package(MPI), and we configure with -G Ninja.
+cmake = ">=3.20"
+ninja = "*"
+cxx-compiler = "*"
+openmpi = ">=5.0,<6"
+# scripts/plot.py: import numpy, matplotlib.
+python = "3.13.*"
+numpy = ">=2"
+matplotlib-base = "*"
+
+[tasks]
+configure = { cmd = "cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release", inputs = ["CMakeLists.txt"], outputs = ["build/CMakeCache.txt"] }
+build = { cmd = "cmake --build build", depends-on = ["configure"], description = "Compile the solver" }
+run = { cmd = "mpirun --oversubscribe -n {{ ranks }} build/grayscott --size {{ size }} --steps {{ steps }}", args = [{ arg = "ranks", default = "2" }, { arg = "size", default = "256" }, { arg = "steps", default = "10000" }], depends-on = ["build"], description = "Run the solver: pixi run run [ranks] [size] [steps]" }
+plot = { cmd = "python scripts/plot.py output/v.npy", description = "Plot output/v.npy to output/v.png" }

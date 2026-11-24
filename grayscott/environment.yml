@@ -1,5 +1,5 @@
 # The conda environment a colleague has been using for this code.
-# Block 4 starts by importing it: pixi init --import environment.yml
+# Step 4.7 imports it: pixi init --import environment.yml
 name: grayscott
 channels:
   - conda-forge

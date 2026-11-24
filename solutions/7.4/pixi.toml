@@ -1,5 +1,5 @@
-# Solution for block 7, step 3: a separate workspace that uses the solver
-# package. Copy into analysis/ (cp solutions/block-7-pixi-build/analysis/pixi.toml analysis/).
+# Step 7.4: a separate workspace that uses the solver package.
+# From analysis/ (not grayscott/): cp ../solutions/7.4/pixi.toml .
 
 [workspace]
 name = "grayscott-analysis"

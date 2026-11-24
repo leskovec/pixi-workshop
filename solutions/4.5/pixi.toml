@@ -1,10 +1,6 @@
-# Solution for block 6: two ways to get MPI.
-# Copy into grayscott/ (cp solutions/block-6-mpi/pixi.toml grayscott/).
-#
-# - mpi-bundled: Open MPI from conda-forge, identical on laptop and cluster.
-# - mpi-system:  a placeholder package that uses the cluster's own Open MPI.
-#                Load the site module first (e.g. `module load OpenMPI/5.0.x`),
-#                and keep the version below in line with it.
+# Step 4.5: features, environments and a test. With all four platforms this
+# is also the end of block 4 (step 4.6).
+# From grayscott/: cp ../solutions/4.5/pixi.toml .
 
 [workspace]
 name = "grayscott"
@@ -12,19 +8,12 @@ version = "0.1.0"
 channels = ["conda-forge"]
 platforms = ["linux-64", "linux-aarch64", "osx-arm64", "osx-64"]
 
-[feature.mpi-bundled.dependencies]
+# Needed in every environment: the code is an MPI program.
+# Block 6 looks at the MPI choice in detail.
+[dependencies]
 openmpi = ">=5.0,<6"
 
-[feature.mpi-system]
-# External MPI placeholders are Linux only and live in a separate label.
-platforms = ["linux-64", "linux-aarch64"]
-channels = [{ channel = "conda-forge/label/mpi-external", priority = 1 }]
-
-[feature.mpi-system.dependencies]
-openmpi = { version = "5.0.*", build = "external_*" }
-# For an MPICH-compatible site MPI (MPICH, Intel MPI, Cray MPICH) use instead:
-# mpich = { version = "4.*", build = "external_*" }
-
+# Compilers and build tools, only for development.
 [feature.build.dependencies]
 cxx-compiler = "*"
 cmake = ">=3.20"
@@ -35,14 +24,7 @@ configure = { cmd = "cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release", i
 build = { cmd = "cmake --build build", depends-on = ["configure"], description = "Compile the solver" }
 run = { cmd = "mpirun --oversubscribe -n {{ ranks }} build/grayscott --size {{ size }} --steps {{ steps }}", args = [{ arg = "ranks", default = "2" }, { arg = "size", default = "256" }, { arg = "steps", default = "10000" }], depends-on = ["build"], description = "Run the solver: pixi run run [ranks] [size] [steps]" }
 
-[feature.mpi-python.dependencies]
-python = "3.13.*"
-mpi4py = ">=4"
-
-[feature.mpi-python.tasks]
-hello = { cmd = "mpirun --oversubscribe -n {{ ranks }} python scripts/hello_mpi.py", args = [{ arg = "ranks", default = "4" }], description = "One line per MPI rank" }
-
-# Plotting needs no MPI at all.
+# Plotting.
 [feature.analysis.dependencies]
 python = "3.13.*"
 numpy = ">=2"
@@ -51,6 +33,7 @@ matplotlib-base = "*"
 [feature.analysis.tasks]
 plot = { cmd = "python scripts/plot.py output/v.npy", description = "Plot output/v.npy to output/v.png" }
 
+# A regression test: 1 rank and 4 ranks must give the same result.
 [feature.test.dependencies]
 python = "3.13.*"
 numpy = ">=2"
@@ -61,8 +44,8 @@ run-4 = { cmd = "mpirun --oversubscribe -n 4 build/grayscott --size 64 --steps 5
 test = { cmd = "python scripts/compare.py output/test-1.npy output/test-4.npy", depends-on = ["run-1", "run-4"], description = "Results must not depend on the number of ranks" }
 
 [environments]
-default = { features = ["mpi-bundled", "build", "mpi-python", "analysis", "test"], solve-group = "main" }
+# `pixi run ...` uses the default environment: everything for development.
+default = { features = ["build", "analysis", "test"], solve-group = "main" }
 analysis = { features = ["analysis"], solve-group = "main" }
-prod = { features = ["mpi-bundled"], solve-group = "main" }
-# Build and run against the cluster's MPI. Separate solve: different openmpi build.
-cluster = { features = ["mpi-system", "build", "mpi-python", "test"] }
+# Only the runtime. Block 7 adds the packaged solver here.
+prod = { features = [], solve-group = "main" }

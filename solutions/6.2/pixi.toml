@@ -1,0 +1,51 @@
+# Step 6.2: MPI in its own feature, plus mpi4py and a hello task.
+# From grayscott/: cp ../solutions/6.2/pixi.toml .
+
+[workspace]
+name = "grayscott"
+version = "0.1.0"
+channels = ["conda-forge"]
+platforms = ["linux-64", "linux-aarch64", "osx-arm64", "osx-64"]
+
+[feature.mpi-bundled.dependencies]
+openmpi = ">=5.0,<6"
+
+[feature.build.dependencies]
+cxx-compiler = "*"
+cmake = ">=3.20"
+ninja = "*"
+
+[feature.build.tasks]
+configure = { cmd = "cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release", inputs = ["CMakeLists.txt"], outputs = ["build/CMakeCache.txt"] }
+build = { cmd = "cmake --build build", depends-on = ["configure"], description = "Compile the solver" }
+run = { cmd = "mpirun --oversubscribe -n {{ ranks }} build/grayscott --size {{ size }} --steps {{ steps }}", args = [{ arg = "ranks", default = "2" }, { arg = "size", default = "256" }, { arg = "steps", default = "10000" }], depends-on = ["build"], description = "Run the solver: pixi run run [ranks] [size] [steps]" }
+
+[feature.mpi-python.dependencies]
+python = "3.13.*"
+mpi4py = ">=4"
+
+[feature.mpi-python.tasks]
+hello = { cmd = "mpirun --oversubscribe -n {{ ranks }} python scripts/hello_mpi.py", args = [{ arg = "ranks", default = "4" }], description = "One line per MPI rank" }
+
+# Plotting needs no MPI at all.
+[feature.analysis.dependencies]
+python = "3.13.*"
+numpy = ">=2"
+matplotlib-base = "*"
+
+[feature.analysis.tasks]
+plot = { cmd = "python scripts/plot.py output/v.npy", description = "Plot output/v.npy to output/v.png" }
+
+[feature.test.dependencies]
+python = "3.13.*"
+numpy = ">=2"
+
+[feature.test.tasks]
+run-1 = { cmd = "mpirun -n 1 build/grayscott --size 64 --steps 500 --output output/test-1.npy", depends-on = ["build"] }
+run-4 = { cmd = "mpirun --oversubscribe -n 4 build/grayscott --size 64 --steps 500 --output output/test-4.npy", depends-on = ["build"] }
+test = { cmd = "python scripts/compare.py output/test-1.npy output/test-4.npy", depends-on = ["run-1", "run-4"], description = "Results must not depend on the number of ranks" }
+
+[environments]
+default = { features = ["mpi-bundled", "build", "mpi-python", "analysis", "test"], solve-group = "main" }
+analysis = { features = ["analysis"], solve-group = "main" }
+prod = { features = ["mpi-bundled"], solve-group = "main" }

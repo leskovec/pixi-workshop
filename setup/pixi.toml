@@ -3,7 +3,7 @@
 #   cd setup && pixi run check
 #
 # This downloads the packages used in the workshop into pixi's cache, so the
-# exercises do not wait for downloads on the day.
+# hands-on steps do not wait for downloads on the day.
 
 [workspace]
 name = "setup-check"

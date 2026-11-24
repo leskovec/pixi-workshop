@@ -7,3 +7,40 @@
 .slidev-layout code {
   font-variant-ligatures: none;
 }
+
+/* "exercise 4.3": which exercise step a lecture slide belongs to */
+.step-tag {
+  position: absolute;
+  top: 1.4rem;
+  right: 2rem;
+  padding: 0.1rem 0.7rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  opacity: 0.6;
+}
+
+/* the numbered step list on the hands-on slides */
+.steps {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-flow: column;
+  gap: 0.55rem 2.5rem;
+  margin-top: 1.2rem;
+}
+.steps b {
+  display: inline-block;
+  width: 2.6rem;
+  color: #2b8cbe;
+  font-family: var(--slidev-code-font-family, monospace);
+}
+.catchup {
+  margin-top: 2rem;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+/* keep flags like --locked on one line in tables */
+.slidev-layout td code {
+  white-space: nowrap;
+}

@@ -50,4 +50,4 @@ rank 1 of 2: setup OK
 
 ## 5. The cluster
 
-In the second half you run jobs on the NSC cluster at IJS. You get a user name and a password during the workshop, so there is nothing to prepare except an SSH client: it is built into macOS and Linux, and on Windows use the one in WSL2.
+In the second half you work on the NSC cluster at IJS over SSH. You get a user name and a password during the workshop, so there is nothing to prepare except an SSH client: it is built into macOS and Linux, and on Windows use the one in WSL2.
