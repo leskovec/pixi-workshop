@@ -869,7 +869,7 @@ echo "no installation needed" | pixi exec cowpy
 
 ```bash
 pixi info | grep -i cache    # the shared package cache
-pixi clean                   # removes .pixi/ in this workspace
+pixi clean                   # removes the environments in .pixi/
 ```
 
 - Deleting `.pixi/` is always safe: `pixi install` recreates it from `pixi.lock`
@@ -1692,7 +1692,7 @@ Behind? `cp ../solutions/7.2/pixi.toml .`
 # 7.3 Build the package file
 
 ```bash
-pixi build -o dist
+pixi publish --target-dir dist   # builds the package and copies the .conda here
 ls dist/                         # grayscott-0.1.0-<hash>_0.conda
 pixi exec rattler-build package inspect dist/grayscott-*.conda
 ```
@@ -1711,7 +1711,7 @@ zoom: 0.88
 cd ../analysis
 pixi init
 pixi workspace preview add pixi-build
-pixi add python numpy matplotlib-base
+pixi add "python=3.13.*" numpy matplotlib-base
 ```
 
 In `pixi.toml`, under `[dependencies]`: `grayscott = { path = "../grayscott" }`
@@ -1775,7 +1775,7 @@ Measured on M1 Pro, 256 x 256, 10000 steps, 1 rank, three runs each: 463-496 Mce
 
 - Publish the `.conda` file to a channel (`pixi publish`, prefix.dev, S3, Artifactory) and replace `path = "../grayscott"` with a version requirement
 - Build variants: one package per MPI flavour or CPU instruction set, instead of one flag for everyone
-- Cross-compiling, e.g. `pixi build --target-platform linux-aarch64`
+- Cross-compiling, e.g. `pixi publish --target-platform linux-aarch64`
 
 ---
 layout: section
@@ -1862,7 +1862,7 @@ pixi-pack -e prod -p linux-64 -o grayscott-linux.tar
 
 - Pure conda-forge environments pack for any platform
 - Ours contains a package built from source, and C++ is not cross-compiled from macOS to Linux here, so this fails on a Mac
-- Pack on a Linux machine (WSL2, a login node, CI), or build the `.conda` there with `pixi build` and add it with `--inject grayscott-0.1.0-*.conda`
+- Pack on a Linux machine (WSL2, a login node, CI), or build the `.conda` there as in 7.3 and add it with `--inject grayscott-0.1.0-*.conda`
 
 ---
 zoom: 0.92
