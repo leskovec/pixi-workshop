@@ -76,16 +76,20 @@ Note that `cluster` has no `solve-group`: it must be solved separately because i
 
 ## 5. On the NSC cluster
 
-In `pixi-workshop/grayscott` on NSC, with the manifest and lock file from block 5. They already contain the `cluster` environment.
+In the `salloc` session from block 5, in `pixi-workshop/grayscott`. The manifest and lock file already contain the `cluster` environment.
 
 ```bash
-module load OpenMPI/5.0.x                  # the site's Open MPI
+module load OpenMPI/5.0.x                  # the site's Open MPI; `module avail openmpi` lists them
 pixi install --locked -e cluster
 pixi run -e cluster --frozen build         # compiled against the site's MPI
-sbatch ../hpc/grayscott-system.sbatch
-sbatch ../hpc/grayscott-bundled.sbatch
-squeue -u $USER
-grep -h Mcell gs-system-*.out gs-bundled-*.out   # compare, once both have run
+pixi run -e cluster --frozen build/grayscott --version
+srun build/grayscott --size 4096 --steps 2000 --output output/system.npy
 ```
 
-`build/grayscott --version` in `gs-system-*.out` names the site's Open MPI; the bundled run names conda-forge's.
+Compare with the bundled run from block 5:
+
+```bash
+pixi run -e prod --frozen mpirun -n 8 grayscott --size 4096 --steps 2000 --output output/bundled.npy
+```
+
+`--version` names the site's Open MPI for the `cluster` build and conda-forge's for `prod`. `hpc/grayscott-system.sbatch` is the batch version.

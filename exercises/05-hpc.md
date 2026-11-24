@@ -39,38 +39,47 @@ pixi config unset --local detached-environments
 
 ## 3. On the NSC cluster
 
-You get a user name (`pixi001` to `pixi030`) and a password during the workshop. Two nodes, `nsc-lou001` and `nsc-lou002`, are reserved for us; the job scripts in `hpc/` ask for the reservation `delavnica`.
+You get a user name (`pixi001` to `pixi030`) and a password during the workshop. Two nodes, `nsc-lou001` and `nsc-lou002`, are reserved for us as `delavnica`. Log in, then ask Slurm for 8 cores on one of them for the rest of the afternoon:
 
 ```bash
 ssh pixiXXX@nsc-login.ijs.si               # your own number
+salloc --reservation=delavnica --nodes=1 --ntasks=8 --time=02:00:00
+hostname                                   # nsc-lou001 or nsc-lou002
+```
 
-# once: pixi and the material
+Everything below runs on that node. First pixi and the material:
+
+```bash
 curl -fsSL https://pixi.sh/install.sh | PIXI_VERSION=v0.84.2 bash
 export PATH=$HOME/.pixi/bin:$PATH
 git clone https://github.com/leskovec/pixi-workshop.git
 cd pixi-workshop/grayscott
 ```
 
-The manifest and the lock file come from git: the lock file was solved on a laptop, and `--locked` makes the cluster install exactly that.
+The manifest and the lock file come from git: the lock file was solved on a laptop, and `--locked` makes the cluster install exactly that, or refuse.
 
 ```bash
 cp ../solutions/block-7-pixi-build/grayscott/pixi.{toml,lock} .
-pixi install --locked -e prod              # on the login node: download and build once
-sbatch ../hpc/grayscott-bundled.sbatch     # the job uses --as-is
-squeue -u $USER
-cat gs-bundled-*.out
+pixi install --locked -e prod              # download and build once
 ```
 
 `pixi install` also builds the solver as a conda package; block 7 shows how that works.
 
-What to look at in `hpc/grayscott-bundled.sbatch`:
+Now run it the way a batch job would: activate once, without checking or installing anything.
 
-- `#SBATCH --reservation=delavnica` sends the job to the workshop nodes
-- `eval "$(pixi shell-hook -e prod --as-is)"` activates once in the batch shell; `srun pixi run ...` would start pixi in every rank
-- `--as-is`: the job never solves, downloads or installs, so compute nodes need no internet
-- no conda or Python modules loaded
+```bash
+bash                                       # a sub-shell, so the activation is easy to leave
+eval "$(pixi shell-hook -e prod --as-is)"
+which grayscott mpirun
+mpirun -n 8 grayscott --size 4096 --steps 2000 --output output/bundled.npy
+exit                                       # back to the plain shell on the node
+```
 
-For your own projects, `hpc/pixi-env.sh` shows how to keep pixi's cache and environments out of a small `$HOME`.
+- `--as-is` never solves, downloads or installs, so it is safe in a job and needs no internet.
+- `srun pixi run ...` would start pixi once per MPI rank; `shell-hook` activates once.
+- No conda or Python modules are loaded.
+
+`hpc/grayscott-bundled.sbatch` does the same as a batch job (`sbatch ../hpc/grayscott-bundled.sbatch` from `grayscott/`). For your own projects, `hpc/pixi-env.sh` shows how to keep pixi's cache and environments out of a small `$HOME`.
 
 ## 4. Jupyter on a cluster
 
